@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart CPU Process Scheduler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navigation -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-title">CPU SCHEDULER</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#scheduler-section">CPU Scheduler</a>
+                <a href="#live-monitor-section">Live Monitor</a>
+                <a href="#comparison-section">Comparison</a>
+                <a href="#history-section">History</a>
+                <a href="#algorithms-section">Algorithms</a>
+                <a href="#about-section">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Main Title Header -->
+        <div class="main-header">
+            <h1>SMART CPU PROCESS SCHEDULER</h1>
+            <p class="subtitle">CPU Scheduling Algorithm Simulation & Real-Time Monitor</p>
+        </div>
+
+        <!-- 🖥️ Web Dashboard Quick Summary Bar -->
+        <div class="dashboard-bar">
+            <div class="dash-stat">
+                <span class="dash-label">Processes:</span>
+                <span id="dash-proc-count" class="dash-val">4</span>
+            </div>
+            <div class="dash-stat">
+                <span class="dash-label">Active Algorithm:</span>
+                <span id="dash-active-algo" class="dash-val">FCFS</span>
+            </div>
+            <div class="dash-stat">
+                <span class="dash-label">Smart Suggestion:</span>
+                <span id="dash-smart-suggest" class="dash-val">Analyzing...</span>
+            </div>
+            <div class="dash-stat">
+                <span class="dash-label">CPU Status:</span>
+                <span id="dash-cpu-status" class="dash-val status-idle">Ready</span>
+            </div>
+        </div>
+
+        <!-- Section 1: Process Input Section -->
+        <section id="scheduler-section" class="card">
+            <div class="card-header">
+                <h2>1. Enter Process Details</h2>
+            </div>
+            <div class="card-body">
+                <div class="input-inline-group">
+                    <label for="num-processes"><strong>Number of Processes:</strong></label>
+                    <input type="number" id="num-processes" min="1" max="20" value="4">
+                    <button type="button" id="btn-add-processes" class="btn btn-primary">Add Processes</button>
+                    <button type="button" id="btn-load-example" class="btn btn-secondary">Load Example Data</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="process-input-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Process</th>
+                                <th>Arrival Time (AT)</th>
+                                <th>Burst Time (BT)</th>
+                                <th>Priority (Lower = Higher)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="process-table-body">
+                            <!-- Dynamically generated rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Advanced College Features: Aging & Starvation Detection Settings -->
+                <div class="feature-subpanel">
+                    <div class="feature-inline-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chk-enable-aging" checked>
+                            <strong>🎯 Aging Mechanism:</strong> Boost priority by 1 every
+                            <input type="number" id="aging-interval" min="1" max="20" value="3" class="input-mini">
+                            time units waiting
+                        </label>
+                    </div>
+
+                    <div class="feature-inline-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="chk-starvation-detect" checked>
+                            <strong>💀 Starvation Detection:</strong> Flag process if waiting time &gt;
+                            <input type="number" id="starvation-threshold" min="2" max="50" value="10" class="input-mini">
+                            units
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 🚨 Process Priority Manager -->
+                <div class="priority-manager-box">
+                    <strong>🚨 Process Priority Manager:</strong>
+                    <span>Dynamically adjust priority:</span>
+                    <select id="priority-mgr-pid" class="select-mini">
+                        <!-- Populated by JS -->
+                    </select>
+                    <span>New Priority:</span>
+                    <input type="number" id="priority-mgr-val" min="1" max="99" value="1" class="input-mini">
+                    <button type="button" id="btn-update-priority" class="btn btn-primary btn-sm">Update Priority</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Algorithm Selection -->
+        <section class="card">
+            <div class="card-header">
+                <h2>2. Select Scheduling Algorithm</h2>
+            </div>
+            <div class="card-body">
+                
+                <!-- 🤖 Smart Algorithm Selector Banner (USP Feature) -->
+                <div id="smart-recommendation-card" class="smart-rec-box">
+                    <div class="smart-rec-header">
+                        <strong>🤖 SMART ALGORITHM RECOMMENDATION</strong>
+                    </div>
+                    <div class="smart-workload-stats">
+                        <span><strong>Processes:</strong> <span id="smart-n-procs">4</span></span>
+                        <span><strong>Avg Burst:</strong> <span id="smart-avg-burst">3.5</span></span>
+                        <span><strong>Priority Variation:</strong> <span id="smart-prio-var">High</span></span>
+                        <span><strong>Arrival Variation:</strong> <span id="smart-arr-var">Low</span></span>
+                    </div>
+                    <div class="smart-rec-body">
+                        <div class="rec-title">Recommended: <span id="smart-rec-name" class="highlight-algo">SRTF</span></div>
+                        <div class="rec-reasons">
+                            <strong>Reason:</strong>
+                            <ul id="smart-rec-reasons-list">
+                                <li>Low average waiting time</li>
+                                <li>Short processes present (prevents convoy effect)</li>
+                                <li>High scheduling efficiency</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-apply-smart" class="btn btn-primary btn-sm">Apply Recommendation</button>
+                </div>
+
+                <div class="algo-buttons-container">
+                    <button type="button" class="btn-algo active" data-algo="fcfs">FCFS</button>
+                    <button type="button" class="btn-algo" data-algo="sjf">SJF Non-Preemptive</button>
+                    <button type="button" class="btn-algo" data-algo="srtf">SRTF</button>
+                    <button type="button" class="btn-algo" data-algo="rr">Round Robin</button>
+                    <button type="button" class="btn-algo" data-algo="priority-np">Priority Non-Preemptive</button>
+                    <button type="button" class="btn-algo" data-algo="priority-p">Priority Preemptive</button>
+                </div>
+
+                <!-- Quantum input for Round Robin only -->
+                <div id="quantum-container" class="quantum-box" style="display: none;">
+                    <label for="time-quantum"><strong>Time Quantum:</strong></label>
+                    <input type="number" id="time-quantum" min="1" max="100" value="2">
+                </div>
+
+                <div class="action-buttons-center">
+                    <button type="button" id="btn-run" class="btn btn-success btn-large">Run Scheduler</button>
+                    <button type="button" id="btn-live-sim" class="btn btn-primary btn-large">▶ Real-Time Simulation</button>
+                    <button type="button" id="btn-compare-all" class="btn btn-secondary">⚡ Compare All</button>
+                    <button type="button" id="btn-reset" class="btn btn-danger">Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 📈 Real-Time CPU Monitor Panel (Live Simulation) -->
+        <section id="live-monitor-section" class="card" style="display: none;">
+            <div class="card-header live-header">
+                <h2>📈 Real-Time CPU Monitor & Live Execution</h2>
+                <div class="live-controls">
+                    <button type="button" id="btn-live-pause" class="btn btn-secondary btn-sm">⏸ Pause</button>
+                    <button type="button" id="btn-live-step" class="btn btn-secondary btn-sm">⏭ Step</button>
+                    <label for="live-speed" style="font-size: 0.85rem; font-weight: normal; margin-left: 8px;">Speed:</label>
+                    <select id="live-speed" class="select-mini">
+                        <option value="1000">1x (1s)</option>
+                        <option value="500" selected>2x (0.5s)</option>
+                        <option value="250">4x (0.25s)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="monitor-grid">
+                    <div class="monitor-cell">
+                        <span class="m-title">Simulation Time</span>
+                        <span id="live-sim-time" class="m-val">T = 0</span>
+                    </div>
+                    <div class="monitor-cell">
+                        <span class="m-title">CPU State</span>
+                        <span id="live-cpu-core" class="m-val status-idle">IDLE</span>
+                    </div>
+                    <div class="monitor-cell monitor-queue-cell">
+                        <span class="m-title">Ready Queue (Waiting for CPU)</span>
+                        <div id="live-ready-queue" class="queue-container">
+                            <span class="queue-empty">[ Empty ]</span>
+                        </div>
+                    </div>
+                    <div class="monitor-cell">
+                        <span class="m-title">Live Utilization</span>
+                        <span id="live-cpu-util-val" class="m-val">0.0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Results & Gantt Chart -->
+        <section id="results-section" class="card" style="display: none;">
+            <div class="card-header">
+                <h2>3. Scheduling Results</h2>
+            </div>
+            <div class="card-body">
+                
+                <!-- 💀 Starvation Alert & Aging Progression Card -->
+                <div id="starvation-alert-box" class="starvation-banner" style="display: none;">
+                    <div class="starvation-title">
+                        <strong>⚠️ STARVATION WARNING DETECTED</strong>
+                    </div>
+                    <div id="starvation-alert-msg" class="starvation-msg">
+                        <!-- Dynamic details -->
+                    </div>
+                    <div id="aging-progression-box" class="aging-box" style="display: none;">
+                        <strong>🎯 Aging Mechanism in Action:</strong>
+                        <div id="aging-progression-content"></div>
+                    </div>
+                </div>
+
+                <!-- 🔄 Context Switch Trace Display -->
+                <div class="context-trace-box">
+                    <strong>🔄 CPU Execution Sequence:</strong>
+                    <span id="context-trace-sequence" class="trace-seq">P1 → P2 → P3</span>
+                    <span class="trace-badge">Total Context Switches: <strong id="context-trace-count">2</strong></span>
+                </div>
+
+                <!-- 📊 CPU Utilization Graph (Visual Bar Chart) -->
+                <div class="utilization-container">
+                    <div class="util-header">
+                        <strong>📊 CPU UTILIZATION GRAPH</strong>
+                        <span id="util-percentage-text" class="util-badge">100.0%</span>
+                    </div>
+
+                    <!-- Visual Process Bar Chart with Y-axis -->
+                    <div class="cpu-bar-chart-card">
+                        <div class="chart-y-axis">
+                            <span>100%</span>
+                            <span>80%</span>
+                            <span>60%</span>
+                            <span>40%</span>
+                            <span>20%</span>
+                            <span>0%</span>
+                        </div>
+                        <div id="cpu-chart-bars" class="chart-bars-area">
+                            <!-- Dynamically generated bars for P1, P2... and Overall CPU -->
+                        </div>
+                    </div>
+
+                    <div class="util-legend">
+                        <span><span class="legend-dot dot-busy"></span> Active CPU Time: <strong id="util-busy-time">0</strong> units</span>
+                        <span><span class="legend-dot dot-idle"></span> Idle CPU Time: <strong id="util-idle-time">0</strong> units</span>
+                        <span>Total Timeline: <strong id="util-total-time">0</strong> units</span>
+                    </div>
+                </div>
+
+                <!-- Gantt Chart Section -->
+                <div class="gantt-section">
+                    <h3>GANTT CHART</h3>
+                    <div id="gantt-chart-wrapper" class="gantt-wrapper">
+                        <!-- Dynamic Gantt chart blocks and time numbers -->
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="table-responsive">
+                    <table class="data-table results-table">
+                        <thead>
+                            <tr>
+                                <th>PID</th>
+                                <th>Arrival Time (AT)</th>
+                                <th>Burst Time (BT)</th>
+                                <th>Priority</th>
+                                <th>Completion Time (CT)</th>
+                                <th>Turnaround Time (TAT)</th>
+                                <th>Waiting Time (WT)</th>
+                                <th>Response Time (RT)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table-body">
+                            <!-- Result rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Average Metrics & Counters -->
+                <div class="metrics-summary">
+                    <div class="metric-item">
+                        <span class="metric-label">Average Waiting Time:</span>
+                        <span id="avg-wt-value" class="metric-value">0.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Average Turnaround Time:</span>
+                        <span id="avg-tat-value" class="metric-value">0.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">⏱️ Average Response Time:</span>
+                        <span id="avg-rt-value" class="metric-value">0.00</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">🔄 Context Switches:</span>
+                        <span id="context-switch-value" class="metric-value">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">📊 Overall CPU Utilization:</span>
+                        <span id="cpu-util-metric-val" class="metric-value">100%</span>
+                    </div>
+                </div>
+
+                <!-- Algorithm Information Box -->
+                <div class="algo-info-card">
+                    <h4>Selected Algorithm: <span id="info-algo-name">FCFS</span></h4>
+                    <p><strong>Type:</strong> <span id="info-algo-type">Non-Preemptive</span></p>
+                    <p><strong>Description:</strong> <span id="info-algo-desc">Processes are executed in order of arrival.</span></p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 4: ⚡ Algorithm Comparison & 🏆 Best Algorithm Recommendation -->
+        <section id="comparison-section" class="card">
+            <div class="card-header">
+                <h2>⚡ Algorithm Comparison & 🏆 Best Algorithm</h2>
+            </div>
+            <div class="card-body">
+                <p style="margin-bottom: 12px; font-size: 0.95rem; color: #4a5568;">
+                    Comparative analysis across all 6 scheduling algorithms on the exact same process workload:
+                </p>
+
+                <!-- 🏆 Best Recommendation Banner -->
+                <div id="best-algo-card" class="recommendation-banner" style="display: none;">
+                    <div class="rec-icon">🏆</div>
+                    <div class="rec-text">
+                        <strong>BEST ALGORITHM: <span id="best-algo-title">SRTF</span></strong>
+                        <p id="best-algo-reason">Achieves the lowest average waiting time and turnaround time for this workload.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Avg WT</th>
+                                <th>Avg TAT</th>
+                                <th>Avg RT</th>
+                                <th>Context Switches</th>
+                                <th>CPU Util.</th>
+                                <th>Verdict</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-table-body">
+                            <tr>
+                                <td colspan="7" style="color: #718096; padding: 16px;">
+                                    Click <strong>"Compare All"</strong> or <strong>"Run Scheduler"</strong> to generate the comparison matrix.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Viva Context Switch Note -->
+                <div class="viva-note-box">
+                    <strong>💡 Viva Explanation - Context Switching & Trade-offs:</strong>
+                    <p>Preemptive algorithms (like SRTF & Round Robin) generally achieve lower Average Waiting Times but incur higher Context Switches, which introduces hardware cache/register reload overhead in real operating systems. Non-preemptive algorithms (like FCFS & SJF) have fewer context switches but risk higher waiting times for short jobs.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: 📋 Process Run History -->
+        <section id="history-section" class="card">
+            <div class="card-header history-header">
+                <h2>📋 Process History & Simulation Log</h2>
+                <button type="button" id="btn-clear-history" class="btn btn-secondary btn-sm">Clear History</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="data-table history-table">
+                        <thead>
+                            <tr>
+                                <th>Run #</th>
+                                <th>Timestamp</th>
+                                <th>Algorithm</th>
+                                <th>Processes</th>
+                                <th>Avg WT</th>
+                                <th>Avg TAT</th>
+                                <th>Avg RT</th>
+                                <th>Context Switches</th>
+                                <th>CPU Util</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body">
+                            <tr>
+                                <td colspan="9" style="color: #718096; padding: 16px;">
+                                    No simulation history logged yet. Run a scheduler to record data.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 6: Algorithms Reference -->
+        <section id="algorithms-section" class="card">
+            <div class="card-header">
+                <h2>Algorithm Descriptions & Formulas</h2>
+            </div>
+            <div class="card-body">
+                <div class="reference-grid">
+                    <div class="ref-item">
+                        <strong>FCFS (First Come First Serve):</strong>
+                        <p>Processes are executed in order of arrival.</p>
+                    </div>
+                    <div class="ref-item">
+                        <strong>SJF (Shortest Job First):</strong>
+                        <p>The process with the shortest burst time is selected first.</p>
+                    </div>
+                    <div class="ref-item">
+                        <strong>SRTF (Shortest Remaining Time First):</strong>
+                        <p>The process with the shortest remaining time is selected.</p>
+                    </div>
+                    <div class="ref-item">
+                        <strong>Round Robin (RR):</strong>
+                        <p>Each process gets CPU time according to the time quantum.</p>
+                    </div>
+                    <div class="ref-item">
+                        <strong>Priority Non-Preemptive:</strong>
+                        <p>The available process with the highest priority is selected.</p>
+                    </div>
+                    <div class="ref-item">
+                        <strong>Priority Preemptive:</strong>
+                        <p>The process with the highest priority can interrupt the current process.</p>
+                    </div>
+                </div>
+
+                <div class="formulas-box">
+                    <strong>Standard CPU Scheduling Formulas:</strong>
+                    <ul>
+                        <li><code>Turnaround Time (TAT) = Completion Time (CT) - Arrival Time (AT)</code></li>
+                        <li><code>Waiting Time (WT) = Turnaround Time (TAT) - Burst Time (BT)</code></li>
+                        <li><code>Response Time (RT) = First CPU Time - Arrival Time (AT)</code></li>
+                        <li><code>CPU Utilization = (Total Busy Time / Total Timeline) * 100%</code></li>
+                        <li><code>Context Switches = Count of process switches on CPU</code></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+       
+
+        <footer class="footer">
+            <p>Smart CPU Process Scheduler &bull; College Mini Project Simulation</p>
+        </footer>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
